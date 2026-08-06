@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Desktop — Malformed Mach-O / ASAR Integrity Fix</title>
+<meta name="description" content="A one-click fix and full explanation for the 'Malformed Mach-o file' and ASAR integrity crashes on Claude Desktop for macOS.">
+<style>
+  :root{
+    --bg:#f7f7f5; --bg-elevated:#ffffff; --text:#1b1b18; --text-dim:#5a5a54;
+    --border:#e5e3dd; --accent:#c15f3c; --accent-text:#ffffff;
+    --code-bg:#1e1c19; --code-text:#f1efe9; --danger:#b3432e; --ok:#3f7d4f;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#15140f; --bg-elevated:#1d1b16; --text:#f1efe6; --text-dim:#b5b1a3;
+      --border:#332f26; --accent:#e08a5f; --accent-text:#1b1200;
+      --code-bg:#0f0e0b; --code-text:#f1efe6; --danger:#e0806a; --ok:#7fc793;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 30px rgba(0,0,0,.4);
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.6;
+  }
+  .wrap{max-width:800px; margin:0 auto; padding:0 24px;}
+  header.hero{padding:64px 0 40px; border-bottom:1px solid var(--border);}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600;
+    color:var(--accent); text-transform:uppercase; letter-spacing:.04em; margin-bottom:16px;
+  }
+  h1{font-size:clamp(28px,4vw,40px); line-height:1.15; margin:0 0 16px; letter-spacing:-.01em;}
+  .sub{font-size:18px; color:var(--text-dim); max-width:60ch; margin:0 0 28px;}
+  .cta-row{display:flex; gap:12px; flex-wrap:wrap;}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; padding:12px 20px; border-radius:10px;
+    font-weight:600; font-size:15px; text-decoration:none; border:1px solid transparent;
+    transition:transform .1s ease, opacity .15s ease;
+  }
+  .btn:active{transform:scale(.98)}
+  .btn-primary{background:var(--accent); color:var(--accent-text);}
+  .btn-primary:hover{opacity:.92}
+  .btn-ghost{background:transparent; color:var(--text); border-color:var(--border);}
+  .btn-ghost:hover{background:var(--bg-elevated);}
+
+  section{padding:48px 0; border-bottom:1px solid var(--border);}
+  section:last-of-type{border-bottom:none;}
+  h2{font-size:24px; margin:0 0 8px; letter-spacing:-.01em;}
+  h3{font-size:17px; margin:28px 0 8px;}
+  p{margin:0 0 14px; color:var(--text-dim);}
+  p.lead{color:var(--text); font-size:16px;}
+  a{color:var(--accent);}
+  code{
+    background:var(--bg-elevated); border:1px solid var(--border); border-radius:5px;
+    padding:2px 6px; font-size:.9em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+
+  .card{
+    background:var(--bg-elevated); border:1px solid var(--border); border-radius:14px;
+    padding:20px 22px; margin-bottom:16px; box-shadow:var(--shadow);
+  }
+  .card h3{margin-top:0;}
+  .card-grid{display:grid; grid-template-columns:1fr; gap:16px;}
+  @media (min-width:640px){ .card-grid{grid-template-columns:1fr 1fr;} }
+
+  .shots{display:flex; gap:14px; flex-wrap:wrap; margin:20px 0;}
+  .shots img{
+    max-width:100%; width:340px; border-radius:10px; border:1px solid var(--border);
+    box-shadow:var(--shadow);
+  }
+
+  pre{
+    background:var(--code-bg); color:var(--code-text); border-radius:12px; padding:18px 20px;
+    overflow-x:auto; font-size:13.5px; line-height:1.55; position:relative;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  pre code{background:none; border:none; padding:0; color:inherit;}
+  .copy-btn{
+    position:absolute; top:10px; right:10px; background:rgba(255,255,255,.08); color:var(--code-text);
+    border:1px solid rgba(255,255,255,.16); border-radius:7px; padding:5px 10px; font-size:12px;
+    cursor:pointer; font-family:inherit;
+  }
+  .copy-btn:hover{background:rgba(255,255,255,.16);}
+
+  .steps{list-style:none; margin:0; padding:0; counter-reset:step;}
+  .steps li{
+    counter-increment:step; position:relative; padding:0 0 18px 40px; color:var(--text);
+  }
+  .steps li::before{
+    content:counter(step); position:absolute; left:0; top:-1px; width:26px; height:26px;
+    border-radius:50%; background:var(--accent); color:var(--accent-text); font-size:13px;
+    font-weight:700; display:flex; align-items:center; justify-content:center;
+  }
+
+  .badge{
+    display:inline-block; font-size:12px; font-weight:700; padding:3px 9px; border-radius:100px;
+    margin-bottom:10px;
+  }
+  .badge.danger{background:color-mix(in srgb, var(--danger) 18%, transparent); color:var(--danger);}
+  .badge.ok{background:color-mix(in srgb, var(--ok) 18%, transparent); color:var(--ok);}
+
+  table{width:100%; border-collapse:collapse; font-size:14px;}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--border);}
+  th{color:var(--text-dim); font-weight:600; font-size:13px;}
+
+  .langs{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
+  .langs a{
+    font-size:13px; padding:6px 12px; border-radius:100px; border:1px solid var(--border);
+    text-decoration:none; color:var(--text); background:var(--bg-elevated);
+  }
+  .langs a:hover{border-color:var(--accent); color:var(--accent);}
+
+  footer{padding:40px 0 64px; color:var(--text-dim); font-size:14px;}
+  footer a{color:var(--text-dim); text-decoration:underline;}
+  .final-cta{
+    text-align:center; padding:56px 0; background:var(--bg-elevated); border-radius:20px;
+    margin:8px 0; border:1px solid var(--border);
+  }
+  .final-cta h2{margin-bottom:10px;}
+  .final-cta p{max-width:44ch; margin-left:auto; margin-right:auto;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">macOS · Claude Desktop · Electron</div>
+    <h1>Fix the "Malformed Mach-O file" and ASAR integrity crash — in one click.</h1>
+    <p class="sub">
+      If you (or a patcher tool) modified Claude Desktop's <code>app.asar</code> and now
+      the Claude Code tab won't start, or the whole app refuses to launch, this page
+      explains exactly why — and the linked repo fixes it automatically.
+    </p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://github.com/m4tinbeigi-official/claude-macho-fix">
+        ★ View the project on GitHub
+      </a>
+      <a class="btn btn-ghost" href="#quick-fix">Jump to the fix</a>
+    </div>
+  </header>
+
+  <section id="symptoms">
+    <h2>Do either of these look familiar?</h2>
+    <p class="lead">This repo covers two distinct crashes with the same root story: a patched <code>app.asar</code> that wasn't repacked and re-signed correctly.</p>
+
+    <div class="card">
+      <span class="badge danger">Symptom 1</span>
+      <h3>Claude Code tab won't start</h3>
+      <pre><code>Claude Code couldn't start
+Restarting Claude Desktop may resolve this.
+
+Claude Code process exited with code 127. stderr: Failed to spawn process: Malformed Mach-o file</code></pre>
+      <p>Only the <strong>Claude Code tab</strong> fails — chat and the rest of the app work fine.</p>
+      <div class="shots">
+        <img src="assets/error-code-tab-detail.png" alt="Claude Code couldn't start — error detail dialog" loading="lazy">
+        <img src="assets/error-code-tab-toast.png" alt="Claude Code couldn't start toast notification" loading="lazy">
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="badge danger">Symptom 2</span>
+      <h3>The whole app won't launch</h3>
+      <pre><code>[FATAL:electron/shell/common/asar/asar_util.cc:144] Integrity check failed
+for asar archive (139796d9f05e1667a633fdc5dab1f565760ef18a4584202fdcddc9a94717db6a
+vs eb74792783f1d924ccdba5e302805b10e95fa1ff0c6dd04794ba452c14ee2d52)</code></pre>
+      <p>Nothing opens — visible only if you run <code>Contents/MacOS/Claude</code> directly from a terminal. Double-clicking the app just silently fails.</p>
+    </div>
+  </section>
+
+  <section id="why">
+    <h2>Why this happens</h2>
+    <p class="lead">Not specific to any one patcher — any tool that extracts, edits, and repacks <code>app.asar</code> can trigger this if it misses two macOS/Electron-specific details.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h3>1. A native binary got packed <em>into</em> the archive</h3>
+        <p>Native binaries (<code>*.node</code>, <code>*.dylib</code>, helper executables) must stay unpacked on disk beside <code>app.asar</code>. A repacker that hardcodes which extensions to keep unpacked will swallow anything that doesn't match — like the Claude Code CLI helper — straight into the archive. An archive entry isn't an executable file, so macOS reports it as a corrupt Mach-O when Claude tries to spawn it.</p>
+      </div>
+      <div class="card">
+        <h3>2. Re-signing without stripping stale nested signatures</h3>
+        <p>Editing files inside <code>app.asar</code> invalidates the nested signatures of bundled sub-apps and frameworks, but doesn't remove them. Signing on top of stale signatures reports success — the failure only shows up later, on <code>codesign --verify</code>.</p>
+      </div>
+      <div class="card" style="grid-column:1/-1">
+        <h3>3. Electron's embedded ASAR integrity fuse</h3>
+        <p>Electron can bake the expected SHA-256 hash of <code>app.asar</code> directly into the Electron Framework binary at build time. Once you patch <code>app.asar</code>, that embedded hash no longer matches and Electron hard-crashes at launch instead of degrading gracefully. This is Symptom 2. The supported fix is to disable this fuse with Electron's own <a href="https://www.npmjs.com/package/@electron/fuses">@electron/fuses</a> tooling, then re-sign the whole bundle.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="quick-fix">
+    <h2>The one-click fix</h2>
+    <p class="lead">You don't need to know which symptom hit you — the repair script fixes both, safely, and can be re-run any time.</p>
+
+    <h3>No terminal — double-click it</h3>
+    <ol class="steps">
+      <li>Download the repo from GitHub (<em>Code → Download ZIP</em>) and unzip it.</li>
+      <li>Double-click <code>Fix Claude.command</code>.</li>
+      <li>A terminal window walks you through every step and offers to relaunch Claude Desktop when it's done.</li>
+    </ol>
+    <p>macOS may warn the file is from an unidentified developer the first time — right-click it and choose <strong>Open</strong> to bypass that once.</p>
+
+    <h3>One line in Terminal</h3>
+    <pre><button class="copy-btn" data-copy="curl -fsSL https://raw.githubusercontent.com/m4tinbeigi-official/claude-macho-fix/main/repair.sh | bash">Copy</button><code>curl -fsSL https://raw.githubusercontent.com/m4tinbeigi-official/claude-macho-fix/main/repair.sh | bash</code></pre>
+
+    <p>The script auto-detects <code>Claude.app</code> (or <code>Claude Beta.app</code>), quits it if running, disables the integrity fuse, strips and re-applies code signatures correctly, verifies the result, and offers to relaunch the app — all with clear pass/fail output at every step. It does not touch any of Claude Desktop's actual functionality or content, and it's safe to run more than once.</p>
+  </section>
+
+  <section id="patchers">
+    <h2>Building your own patcher?</h2>
+    <p class="lead">Avoid shipping this bug to your users in the first place. The repo ships three drop-in, dependency-light Node.js modules:</p>
+    <table>
+      <tr><th>Module</th><th>What it does</th></tr>
+      <tr><td><code>lib/unpack.js</code></td><td>Computes the correct <code>unpack</code> glob dynamically from whatever is already unpacked, instead of a hardcoded extension list.</td></tr>
+      <tr><td><code>lib/macos.js</code></td><td>Re-signs a macOS app bundle correctly — strip nested signatures first, sign from scratch, then verify.</td></tr>
+      <tr><td><code>lib/fuses.js</code></td><td>Disables Electron's embedded ASAR integrity fuse via <code>@electron/fuses</code>.</td></tr>
+    </table>
+  </section>
+
+  <section id="languages">
+    <h2>Read the full write-up</h2>
+    <p class="lead">The GitHub README has the complete technical breakdown, in 10 languages.</p>
+    <div class="langs">
+      <a href="https://github.com/m4tinbeigi-official/claude-macho-fix#readme">English</a>
+      <a href="https://github.com/m4tinbeigi-official/claude-macho-fix/blob/main/i18n/README.fa.md">فارسی</a>
+      <a href="https://github.com/m4tinbeigi-official/claude-macho-fix/blob/main/i18n/README.ar.md">العربية</a>
+      <a href="https://github.com/m4tinbeigi-official/claude-macho-fix/blob/main/i18n/README.zh.md">中文</a>
+      <a href="https://github.com/m4tinbeigi-official/claude-macho-fix/blob/main/i18n/README.es.md">Español</a>
+      <a href="https://github.com/m4tinbeigi-official/claude-macho-fix/blob/main/i18n/README.hi.md">हिन्दी</a>
+      <a href="https://github.com/m4tinbeigi-official/claude-macho-fix/blob/main/i18n/README.fr.md">Français</a>
+      <a href="https://github.com/m4tinbeigi-official/claude-macho-fix/blob/main/i18n/README.ru.md">Русский</a>
+      <a href="https://github.com/m4tinbeigi-official/claude-macho-fix/blob/main/i18n/README.pt.md">Português</a>
+      <a href="https://github.com/m4tinbeigi-official/claude-macho-fix/blob/main/i18n/README.de.md">Deutsch</a>
+      <a href="https://github.com/m4tinbeigi-official/claude-macho-fix/blob/main/i18n/README.ja.md">日本語</a>
+    </div>
+  </section>
+
+  <section>
+    <div class="final-cta">
+      <span class="badge ok">Open source · MIT</span>
+      <h2>Ready to fix your install?</h2>
+      <p>Everything above lives in the repo — the script, the modules, and the full explanation.</p>
+      <a class="btn btn-primary" href="https://github.com/m4tinbeigi-official/claude-macho-fix">Go to the claude-macho-fix repo →</a>
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      Not a Claude Desktop bug — Electron's ASAR integrity fuse and macOS code signing are
+      <em>supposed</em> to reject a modified app bundle. This project exists for people who've
+      deliberately patched their own local copy (accessibility, localization, or other personal
+      reasons) and want that patch to also correctly handle the mechanisms it disturbs.
+    </p>
+    <p>
+      <a href="https://github.com/m4tinbeigi-official/claude-macho-fix/issues">Report an issue</a>
+      · <a href="https://github.com/m4tinbeigi-official/claude-macho-fix/blob/main/LICENSE">MIT License</a>
+      · by Rick Sanchez
+    </p>
+  </footer>
+</div>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var text = btn.getAttribute('data-copy');
+      navigator.clipboard.writeText(text).then(function(){
+        var orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(function(){ btn.textContent = orig; }, 1500);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
