@@ -1,0 +1,33 @@
+{
+  "name": "claude-macho-fix",
+  "version": "1.0.0",
+  "description": "Fix for 'Malformed Mach-o file' / ASAR integrity crashes on Claude Desktop (macOS) after patching app.asar.",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/m4tinbeigi-official/claude-macho-fix.git"
+  },
+  "keywords": [
+    "claude",
+    "electron",
+    "asar",
+    "codesign",
+    "macos",
+    "mach-o",
+    "fuses",
+    "claude-desktop"
+  ],
+  "author": "Rick Sanchez",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/m4tinbeigi-official/claude-macho-fix/issues"
+  },
+  "homepage": "https://github.com/m4tinbeigi-official/claude-macho-fix#readme",
+  "type": "commonjs",
+  "dependencies": {
+    "@electron/fuses": "^2.1.3"
+  }
+}
