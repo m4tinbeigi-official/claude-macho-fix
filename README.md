@@ -1,5 +1,7 @@
 # Claude Desktop — "Malformed Mach-o file" / ASAR Integrity Fix (macOS)
 
+🌐 **Read this in another language:** [English](README.md) · [فارسی](i18n/README.fa.md) · [العربية](i18n/README.ar.md) · [中文](i18n/README.zh.md) · [Español](i18n/README.es.md) · [हिन्दी](i18n/README.hi.md) · [Français](i18n/README.fr.md) · [Русский](i18n/README.ru.md) · [Português](i18n/README.pt.md) · [Deutsch](i18n/README.de.md) · [日本語](i18n/README.ja.md)
+
 A fix and explanation for two related crashes that can happen on **Claude
 Desktop for macOS** after `app.asar` (Claude Desktop's packaged app code) has
 been modified — whether by a third-party patch, a plugin, manual tinkering,
@@ -130,6 +132,18 @@ handles this).
 If you just need to repair the `Claude.app` you already have (you don't need
 to know which of the above hit you — this fixes both):
 
+### One click (no terminal)
+
+1. [Download this repo](https://github.com/<your-username>/claude-macho-fix/archive/refs/heads/main.zip) and unzip it.
+2. Double-click **`Fix Claude.command`**.
+3. A terminal window opens, walks you through each step, and offers to
+   relaunch Claude Desktop for you when it's done.
+
+macOS may warn that the file is from an unidentified developer the first
+time — right-click it and choose **Open** to bypass that once.
+
+### One line (terminal)
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/<your-username>/claude-macho-fix/main/repair.sh | bash
 ```
@@ -142,17 +156,21 @@ cd claude-macho-fix
 ./repair.sh
 ```
 
-By default it targets `/Applications/Claude.app`. Pass a different path as
-an argument if yours lives elsewhere:
+`repair.sh` auto-detects `Claude.app` (or `Claude Beta.app`) in the usual
+install locations, quits it if it's currently running, walks through every
+repair step with clear pass/fail output, verifies the result, and offers to
+relaunch the app for you. Pass a path explicitly if yours lives somewhere
+unusual:
 
 ```bash
-./repair.sh "/Applications/Claude Beta.app"
+./repair.sh "/path/to/Claude Beta.app"
 ```
 
 `repair.sh` does **not** modify any of Claude Desktop's actual functionality
 or content — it only disables the integrity fuse and re-signs the bundle.
 It's safe to run even if you're not sure which symptom you have, and safe to
-run multiple times.
+run multiple times. If it can't write to the app bundle, it will tell you to
+re-run it with `sudo`.
 
 ---
 
