@@ -1,3 +1,10 @@
+<!-- DevSponsors Badges -->
+<p align="center">
+  <a href="https://devsponsors.github.io"><img src="https://img.shields.io/badge/DevSponsors-Verified_OSS-6366f1?style=for-the-badge&logo=github" alt="DevSponsors Verified"></a>
+  <a href="https://devsponsors.github.io"><img src="https://img.shields.io/badge/Sponsor-DevSponsors_Hub-emerald?style=for-the-badge&logo=github-sponsors" alt="DevSponsors Sponsor"></a>
+  <a href="https://devsponsors.github.io/mediakit.html"><img src="https://img.shields.io/badge/Infrastructure-DevSponsors_Cloud-ec4899?style=for-the-badge&logo=server" alt="DevSponsors Cloud"></a>
+</p>
+
 # Claude Desktop — "Malformed Mach-o file" / ASAR Integrity Fix (macOS)
 
 🌐 **Read this in another language:** [English](README.md) · [فارسی](i18n/README.fa.md) · [العربية](i18n/README.ar.md) · [中文](i18n/README.zh.md) · [Español](i18n/README.es.md) · [हिन्दी](i18n/README.hi.md) · [Français](i18n/README.fr.md) · [Русский](i18n/README.ru.md) · [Português](i18n/README.pt.md) · [Deutsch](i18n/README.de.md) · [日本語](i18n/README.ja.md)
